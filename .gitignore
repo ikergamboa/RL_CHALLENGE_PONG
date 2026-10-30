@@ -1,0 +1,19 @@
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Logs y registros de entrenamiento
+logs/
+
+# Modelos entrenados y checkpoints (ajusta las extensiones según uses PyTorch, TensorFlow, etc.)
+models/
+*.pt
+*.pth
+*.ckpt
+*.h5
