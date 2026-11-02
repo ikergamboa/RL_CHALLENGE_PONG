@@ -2,6 +2,7 @@ import argparse
 
 import ale_py
 import gymnasium as gym
+import os
 from utils import play_human, play_agent
 
 ENV_ID = "ALE/Pong-v5"
@@ -39,10 +40,19 @@ def play_random(env_id):
 # Main
 # ============================================================
 def main():
+
+    final_model = "models/PPO/final_model"
+    best_model = "models/PPO/best_model/best_model"
+    default_model = final_model if os.path.exists(final_model + ".zip") else best_model
+
     parser = argparse.ArgumentParser(description="Play Atari Pong as a human or using a PPO agent.")
-    parser.add_argument("--mode", choices=["human", "agent","random"], default="random", help="Who controls the paddle.")
-    parser.add_argument("--model", type=str, default="models/PPO/best_model/best_model", help="Path to the PPO model.")
+    parser.add_argument("--mode", choices=["human", "agent","random"], default="agent", help="Who controls the paddle.")
+    # hasta ahora el modo de juego "agent" usaba siempre el best_model, pero el score que conseguía este modelo podía deberse a puro azar, por lo que 
+    # hemos decidido utilizar final_model (si existe, es decir, si el entrenamiento ha terminado) porque, aunque pueda tener un score peor, es un modelo entrenado
+    # durante más iteraciones, y por lo tanto, más fiable
+    parser.add_argument("--model", type=str, default=default_model, help="Path to the PPO model.")
     args = parser.parse_args()
+
 
     if args.mode == "human":
         play_human(ENV_ID)
