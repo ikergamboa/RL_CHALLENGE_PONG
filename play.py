@@ -47,12 +47,22 @@ def main():
 
     parser = argparse.ArgumentParser(description="Play Atari Pong as a human or using a PPO agent.")
     parser.add_argument("--mode", choices=["human", "agent","random"], default="agent", help="Who controls the paddle.")
-    # hasta ahora el modo de juego "agent" usaba siempre el best_model, pero el score que conseguía este modelo podía deberse a puro azar, por lo que 
+    # (2) añadimos la selección del algoritmo en la ejecución de play.py
+    parser.add_argument("--algorithm", choices=["PPO", "DQN", "A2C"], default="PPO", help="Algorithm used by the trained agent.")
+    # (1) hasta ahora el modo de juego "agent" usaba siempre el best_model, pero el score que conseguía este modelo podía deberse a puro azar, por lo que 
     # hemos decidido utilizar final_model (si existe, es decir, si el entrenamiento ha terminado) porque, aunque pueda tener un score peor, es un modelo entrenado
     # durante más iteraciones, y por lo tanto, más fiable
     parser.add_argument("--model", type=str, default=default_model, help="Path to the PPO model.")
     args = parser.parse_args()
 
+    # (2) cambiamos las rutas a los modelos dependiendo del algoritmo que hayamos seleccionado
+    final_model = f"models/{args.algorithm}/final_model"
+    best_model = f"models/{args.algorithm}/best_model/best_model"
+    default_model = (
+        final_model
+        if os.path.exists(final_model + ".zip")
+        else best_model
+    )
 
     if args.mode == "human":
         play_human(ENV_ID)

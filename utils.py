@@ -2,7 +2,7 @@ import sys
 import gymnasium as gym
 
 # for agent mode
-from stable_baselines3 import PPO
+from stable_baselines3 import PPO, DQN, A2C
 from stable_baselines3.common.env_util import make_atari_env
 from stable_baselines3.common.vec_env import VecFrameStack
 
@@ -94,7 +94,9 @@ def play_human(env_id):
 # ============================================================
 # AGENT MODE
 # ============================================================
-def play_agent(model_path, env_id):
+
+def play_agent(model_path, env_id, algorithm="PPO"):
+    
     """Watch a trained PPO agent play against Atari."""
     print(f"Loading model: {model_path}")
 
@@ -113,7 +115,18 @@ def play_agent(model_path, env_id):
     )
     env = VecFrameStack(env, n_stack=4)
 
-    model = PPO.load(model_path, env=env)
+    # (2) seleccionamos el algoritmo que vayamos a usar
+    algorithms = {
+        "PPO": PPO,
+        "DQN": DQN,
+        "A2C": A2C,
+    }
+
+    if algorithm not in algorithms:
+        env.close()
+        raise ValueError(f"Algoritmo no reconocido: {algorithm}")
+
+    model = algorithms[algorithm].load(model_path, env=env)
     obs = env.reset()
     episode_reward = 0
 

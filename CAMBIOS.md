@@ -1,4 +1,8 @@
-1. Utilizar final_model en vez de best_model
+1. Utilizar final_model en vez de best_model.
 
-play.py --> line 53
+play.py
+
+2. Implementación de DQN y A2C.
+
+training.py, utils.py, play.py
 

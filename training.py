@@ -2,7 +2,8 @@ import os
 import ale_py
 import gymnasium as gym
 
-from stable_baselines3 import PPO
+import argparse
+from stable_baselines3 import PPO, DQN, A2C
 from stable_baselines3.common.env_util import make_atari_env
 from stable_baselines3.common.vec_env import VecFrameStack
 from stable_baselines3.common.callbacks import EvalCallback
@@ -13,8 +14,20 @@ from stable_baselines3.common.evaluation import evaluate_policy
 # Configuration
 # ============================================================
 
+# (2) cambiamos el proceso de entrenamiento para que se pueda hacer con dos algoritmos más a demás de PPO (A2C y DQN),
+# esta parte del codigo sirve para escoger el algoritmo al ejecutar play.py:
+# por terminal --> python training.py --algorithm NOMBRE_DEL_ALGORITMO
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--algorithm",
+    choices=["PPO", "DQN", "A2C"],
+    default="PPO",
+    help="Algorithm to train."
+)
+args = parser.parse_args()
+
 ENV_ID = "ALE/Pong-v5"
-ALGORITHM = "PPO"
+ALGORITHM = args.algorithm
 MAX_TIMESTEPS = 1_000_000
 MODELS_DIR = f"models/{ALGORITHM}"
 LOG_DIR = "logs"
@@ -81,22 +94,42 @@ eval_callback = EvalCallback(
     render=False,
 )
 
-
 # ============================================================
 # Agent
 # ============================================================
 
-model = PPO(
-    "CnnPolicy",
-    env,
-    # Using 1000 makes MAX_TIMESTEPS=1,000,000 an exact
-    # multiple of the rollout size.
-    n_steps=1000,
-    batch_size=100,
-    verbose=1,
-    tensorboard_log=LOG_DIR,
-    seed=SEED,
-)
+# (2) definimos los hiperparametros de los diferentes algoritmos
+# estos son los parametros comunes para todos
+common_params = {
+    "policy": "CnnPolicy",
+    "env": env,
+    "verbose": 1,
+    "tensorboard_log": LOG_DIR,
+    "seed": SEED,
+}
+
+if ALGORITHM == "PPO":
+    model = PPO(
+        **common_params,
+        n_steps=1000,
+        batch_size=100,
+    )
+
+elif ALGORITHM == "DQN":
+    model = DQN(
+        **common_params,
+        buffer_size=50_000,
+        learning_starts=10_000,
+        batch_size=32,
+        train_freq=4,
+        gradient_steps=1,
+    )
+
+elif ALGORITHM == "A2C":
+    model = A2C(
+        **common_params,
+        n_steps=5,
+    )
 
 
 # ============================================================
