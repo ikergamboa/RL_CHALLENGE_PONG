@@ -1,14 +1,13 @@
+import argparse
 import os
+
 import ale_py
 import gymnasium as gym
-
-import argparse
-from stable_baselines3 import PPO, DQN, A2C
-from stable_baselines3.common.env_util import make_atari_env
-from stable_baselines3.common.vec_env import VecFrameStack
+from stable_baselines3 import A2C, DQN, PPO
 from stable_baselines3.common.callbacks import EvalCallback
+from stable_baselines3.common.env_util import make_atari_env
 from stable_baselines3.common.evaluation import evaluate_policy
-
+from stable_baselines3.common.vec_env import VecFrameStack
 
 # ============================================================
 # Configuration
