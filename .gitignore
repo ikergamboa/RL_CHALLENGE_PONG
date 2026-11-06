@@ -11,3 +11,6 @@ __pycache__/
 # Logs y registros de entrenamiento
 logs/
 
+.python-version
+pyproject.toml
+uv.lock
