@@ -27,7 +27,12 @@ args = parser.parse_args()
 
 ENV_ID = "ALE/Pong-v5"
 ALGORITHM = args.algorithm
-MAX_TIMESTEPS = 1_000_000
+# (3) aumentamos el número de pasos de entrenamiento para mejorar
+# el rendimiento, dependiendo del algoritmo, porque DQN necesita más pasos para aprender que PPO y A2C
+if ALGORITHM in ["PPO", "A2C"]:
+    MAX_TIMESTEPS = 2_000_000
+elif ALGORITHM == "DQN":
+    MAX_TIMESTEPS = 3_000_000
 MODELS_DIR = f"models/{ALGORITHM}"
 LOG_DIR = "logs"
 SEED = 42
@@ -44,7 +49,8 @@ gym.register_envs(ale_py)
 # Environment
 # ============================================================
 
-def create_env(seed):
+# (4) hacemos que la función acepte el número de entornos como parámetro, para poder crear varios entornos en el caso de PPO y A2C, y solo 1 en el caso de DQN
+def create_env(seed, n_envs=1):
     """
     Creates an Atari Pong environment.
 
@@ -56,7 +62,7 @@ def create_env(seed):
 
     env = make_atari_env(
         ENV_ID,
-        n_envs=1,
+        n_envs=n_envs,
         seed=seed,
         env_kwargs={
             "frameskip": 1,
@@ -65,18 +71,18 @@ def create_env(seed):
             "frame_skip": 4,
             "screen_size": 84,
             "terminal_on_life_loss": False,
-            "clip_reward": False,
+            "clip_reward": True,
         },
     )
-
     # Stack 4 frames so the agent can infer movement/velocity
-    env = VecFrameStack(env,n_stack=4)
 
-    return env
+    return VecFrameStack(env,n_stack=4)
 
-
-env = create_env(SEED)
-eval_env = create_env(SEED + 1000)
+# Crear entornos dependiendo del algoritmo
+num_envs = 8 if ALGORITHM in ["PPO", "A2C"] else 1
+env = create_env(SEED, n_envs=num_envs)
+# El entorno de evaluación SIEMPRE debe ser 1
+eval_env = create_env(SEED + 1000, n_envs=1)
 
 
 # ============================================================
@@ -87,7 +93,9 @@ eval_callback = EvalCallback(
     eval_env,
     best_model_save_path=f"{MODELS_DIR}/best_model",
     log_path=f"{LOG_DIR}/eval",
-    eval_freq=25_000,
+    # (4) añadimos la frecuencia de evaluación dependiendo del número de entornos, para que el agente se evalúe cada 25.000 pasos de entrenamiento (si no,
+    # con 8 entornos (en PPO y A2C) se evaluaría cada 25.000 * 8 = 200.000 pasos, y con 1 entorno (en DQN) se evaluaría cada 25.000 pasos)
+    eval_freq=max(25_000 // num_envs, 1),
     n_eval_episodes=5,
     deterministic=True,
     render=False,
@@ -107,27 +115,36 @@ common_params = {
     "seed": SEED,
 }
 
+# (3) añadimos los parametros específicos de cada algoritmo
+# para este tipo de juegos (que usan CnnPolicy) la comunidad ya ha definido los valores optimos para cada algoritmo, por lo que los usamos directamente
 if ALGORITHM == "PPO":
     model = PPO(
         **common_params,
-        n_steps=1000,
-        batch_size=100,
+        n_steps=128,          # Frecuencia de actualización más rápida (128 * 8 entornos = 1024 frames)
+        batch_size=256,       # Tamaño de lote óptimo para CNN
+        learning_rate=2.5e-4, # Tasa de aprendizaje estándar para PPO en Atari
+        ent_coef=0.01,        # Obliga al agente a explorar (evita que se quede quieto en una esquina)
+        clip_range=0.1,
     )
 
 elif ALGORITHM == "DQN":
     model = DQN(
         **common_params,
-        buffer_size=50_000,
+        buffer_size=100_000,     # Cuanta más memoria de partidas pasadas, mejor (si tu PC tiene RAM)
         learning_starts=10_000,
         batch_size=32,
         train_freq=4,
         gradient_steps=1,
+        learning_rate=1e-4,
+        exploration_fraction=0.1, # Dedica el 10% del entrenamiento inicial solo a explorar
     )
 
 elif ALGORITHM == "A2C":
     model = A2C(
         **common_params,
-        n_steps=5,
+        n_steps=5,            # Funciona genial ahora que n_envs=8 (Batch total = 40)
+        learning_rate=7e-4,
+        ent_coef=0.01,
     )
 
 

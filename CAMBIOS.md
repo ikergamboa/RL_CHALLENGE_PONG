@@ -6,3 +6,11 @@ play.py
 
 training.py, utils.py, play.py
 
+3. Optimización de funcionamiento
+
+training.py
+
+4. Actualización de número de entornos por algoritmo
+
+training.py
+

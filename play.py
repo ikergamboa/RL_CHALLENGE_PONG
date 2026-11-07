@@ -56,18 +56,19 @@ def main():
     args = parser.parse_args()
 
     # (2) cambiamos las rutas a los modelos dependiendo del algoritmo que hayamos seleccionado
-    final_model = f"models/{args.algorithm}/final_model"
-    best_model = f"models/{args.algorithm}/best_model/best_model"
-    default_model = (
-        final_model
-        if os.path.exists(final_model + ".zip")
-        else best_model
-    )
+    if "models/PPO" in args.model and args.algorithm != "PPO":
+        final_model = f"models/{args.algorithm}/final_model"
+        best_model = f"models/{args.algorithm}/best_model/best_model"
+        args.model = (
+            final_model
+            if os.path.exists(final_model + ".zip")
+            else best_model
+        )
 
     if args.mode == "human":
         play_human(ENV_ID)
     elif args.mode == "agent":
-        play_agent(args.model, ENV_ID)
+        play_agent(args.model, ENV_ID, args.algorithm)
     else:
         play_random(ENV_ID)
 
