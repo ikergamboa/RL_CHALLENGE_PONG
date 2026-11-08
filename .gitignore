@@ -8,8 +8,7 @@ __pycache__/
 *.py[cod]
 *.pyo
 
-# Logs y registros de entrenamiento
-logs/
+
 
 .python-version
 pyproject.toml
