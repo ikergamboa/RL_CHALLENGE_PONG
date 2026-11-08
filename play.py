@@ -57,8 +57,8 @@ def main():
 
     # (2) cambiamos las rutas a los modelos dependiendo del algoritmo que hayamos seleccionado
     if "models/PPO" in args.model and args.algorithm != "PPO":
-        final_model = f"models/{args.algorithm}/final_model"
-        best_model = f"models/{args.algorithm}/best_model/best_model"
+        final_model = f"models/{args.algorithm}_base/final_model"
+        best_model = f"models/{args.algorithm}_base/best_model/best_model"
         args.model = (
             final_model
             if os.path.exists(final_model + ".zip")

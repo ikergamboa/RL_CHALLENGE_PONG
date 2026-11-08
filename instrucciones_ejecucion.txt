@@ -1,0 +1,83 @@
+=========================================================
+ INSTRUCCIONES DE EJECUCIÓN - RL CHALLENGE PONG
+=========================================================
+---------------------------------------------------------
+ 1. ENTRENAMIENTO DE AGENTES (training.py)
+---------------------------------------------------------
+
+Este script inicia el proceso de entrenamiento. Crea automáticamente las carpetas `models/` y `logs/` para guardar los resultados.
+Uso básico:
+  python training.py
+
+Parámetros disponibles:
+  --algorithm NOMBRE_ALGORITMO  : Elige el algoritmo a entrenar. Opciones: PPO (por defecto), DQN, A2C.
+  --curriculum  : Activa el modo Curriculum Learning (el primer 10% del entrenamiento se hace contra un rival más fácil).
+
+Ejemplos de uso:
+
+  - Entrenar un agente PPO estándar:
+      python training.py
+
+  - Entrenar un agente DQN clásico:
+      python training.py --algorithm DQN
+
+  - Entrenar un agente A2C utilizando Curriculum Learning:
+      python training.py --algorithm A2C --curriculum
+
+*** los algoritmos base ya no se pueden entrenar, ya que los hiperparametros (y número de entornos dependiedo del algorimo) se han cambiado en el codigo fuente, los que están
+en la carpeta models/ son los que entrenamos en un principio.
+
+
+---------------------------------------------------------
+ 2. EVALUACIÓN Y JUEGO (play.py)
+---------------------------------------------------------
+
+Este script abre la ventana del juego para visualizar gráficamente las partidas. Puede ser controlado por la IA, por un agente aleatorio, o por un humano.
+
+Uso básico:
+  python play.py
+
+Parámetros disponibles:
+  --mode        : Quién controla la pala. Opciones: agent (por defecto), human, random.
+  --algorithm   : El algoritmo del agente entrenado que quieres cargar. Opciones: PPO, DQN, A2C (ejecuta el algoritmo _base).
+  --model       : Ruta específica al archivo del modelo .zip. Útil para cargar modelos antiguos o comparativos (ignorando la ruta por defecto).
+
+Ejemplos de uso:
+  - Ver jugar al agente PPO (carga automáticamente models/PPO/final_model.zip):
+      python play.py
+
+  - Ver jugar al agente DQN optimizado:
+      python play.py --algorithm DQN (ejecuta el DQN_base)
+
+  - Ver jugar a un modelo antiguo o de prueba (usando ruta manual):
+      python play.py --algorithm A2C --model models/A2C_Opt
+
+  - Jugar tú mismo contra la máquina (Controles: Flechas Arriba/Abajo o W/S, Espacio para sacar):
+      python play.py --mode human
+
+
+---------------------------------------------------------
+ 3. VISUALIZACIÓN DE MÉTRICAS (TensorBoard)
+---------------------------------------------------------
+
+Durante o después del entrenamiento, puedes ver las gráficas de aprendizaje (recompensas, duración de episodios, etc.).
+  - Para ver los resultados de los modelos actuales:
+      tensorboard --logdir logs
+
+  - Para comparar con los entrenamientos base/antiguos:
+      tensorboard --logdir logs_base
+
+Una vez ejecutado el comando, abre el navegador web y entra en la dirección http://localhost:6006/
+
+
+---------------------------------------------------------
+ 4. GESTIÓN DE CARPETAS Y SOBRESCRITURA (AVISO IMPORTANTE)
+---------------------------------------------------------
+
+Al ejecutar `training.py`, el script crea las rutas de guardado dinámicamente según el algoritmo elegido (ej. `models/PPO/`).
+*** Los archivos se guardan siempre con nombres fijos (`final_model.zip` y `best_model.zip`). Si vuelves a entrenar un algoritmo que ya habías entrenado previamente, EL SCRIPT SOBRESCRIBIRÁ Y BORRARÁ los modelos anteriores.
+
+SOLUCIÓN ("_base"):
+Para conservar modelos antiguos y poder compararlos con los nuevos sin modificar el código interno:
+
+- Renombra la carpeta del modelo que se quiera guardar (ej. cambia `models/PPO` por `models/PPO_base`).
