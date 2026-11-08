@@ -41,8 +41,8 @@ def play_random(env_id):
 # ============================================================
 def main():
 
-    final_model = "models/PPO/final_model"
-    best_model = "models/PPO/best_model/best_model"
+    final_model = "models/PPO_base/final_model"
+    best_model = "models/PPO_base/best_model/best_model"
     default_model = final_model if os.path.exists(final_model + ".zip") else best_model
 
     parser = argparse.ArgumentParser(description="Play Atari Pong as a human or using a PPO agent.")
