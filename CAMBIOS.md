@@ -14,3 +14,6 @@ training.py
 
 training.py
 
+5. Añadimos curriculum learning
+
+training.py
